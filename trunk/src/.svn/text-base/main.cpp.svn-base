@@ -1,0 +1,89 @@
+
+//============================================================================
+// Name        : HttpLoadTesting.cpp
+// Author      : 
+// Version     :
+// Copyright   : Your copyright notice
+// Description : Hello World in C++, Ansi-style
+//============================================================================
+
+#include <iostream>
+
+#include <ubac/HTTPRequest.h>
+
+#include <ubac/UBACJson.h>
+#include <ubac/IFHelper.h>
+#include <ubac/YamlConfig.h>
+
+
+using namespace std;
+
+#include "RequestQueue.h"
+#include "Requester.h"
+
+using namespace LOADTEST;
+
+RequestQueue URLS_QUEUE;
+string url;
+
+
+int main(int argc, char *argv[])
+{
+	char request[1000];
+	YamlConfig *config = new YamlConfig(argv[1]);
+	url = (*config)["url"];
+	int total_requests = atoi((*config)["total_requests"].c_str());
+	int thread_pool = atoi((*config)["thread_pool"].c_str());
+
+	stringstream sRequestStream;
+	sRequestStream << url << "?";
+	//"mobile_request=556%20%3CGOOG%3E%23%23ROUTER%3DOPX%2CTIMEOUT%3D60%2COPTION_TYPE%3DNORMAL%2CSESSION%3D" << sSession << "%23%23";
+
+	map<string, YamlValue> fields = ((*config)["fields"]);
+
+	map<string,YamlValue>::iterator iter_fields = fields.begin();
+	bool start = true;
+	while(iter_fields != fields.end()){
+		if (!start){
+			sRequestStream << "&";
+			start = false;
+		}
+		sRequestStream << iter_fields->first << "=" << iter_fields->second;
+		iter_fields++;
+	}
+
+	while(total_requests){
+		cout << "request: " << sRequestStream.str() << endl;
+		URLS_QUEUE.addToQueue(sRequestStream.str());
+		total_requests--;
+	}
+
+
+	LOADTEST::Requester *requester = new LOADTEST::Requester;
+
+	vector<pthread_t> thread_ids;
+	while(thread_pool){
+		requester->start(NULL);// create a thread and requests
+		thread_ids.push_back(requester->getThreadID());
+		thread_pool--;
+	}
+
+	vector<pthread_t>::iterator iter_thread = thread_ids.begin();
+	while(iter_thread!=thread_ids.end()){
+		pthread_join(*iter_thread, NULL);
+		iter_thread++;
+	}
+
+	cout << "request delay..." << endl;
+	vector<time_t>::iterator iter_time = requester->time_to_respond.begin();
+	int k = 0;
+	while(iter_time!=requester->time_to_respond.end())
+	{
+		cout << "i: " << k << ", time:" << *iter_time << endl;
+		k++;
+		iter_time++;
+	}
+	delete requester;
+	delete config;
+	return 0;
+}

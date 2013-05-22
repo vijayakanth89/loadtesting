@@ -1,0 +1,7 @@
+url: http://poolws2.marketsimplified.com/raw/4 
+thread_pool: 3
+period: 10
+get_timeout: 120
+total_requests: 100
+fields:
+  mobile_request: 556%20<SPY>%23%23ROUTER%3DOPX%2CTIMEOUT%3D60%2CSESSION%3D80C16D48B8D64E6CBEC709DCDD660DD5%23%23

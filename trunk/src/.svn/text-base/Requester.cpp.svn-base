@@ -1,0 +1,104 @@
+/*
+ * Requester.cpp
+ *
+ *  Created on: 26-Apr-2013
+ *      Author: vijayakanth
+ */
+
+#include "Requester.h"
+
+namespace LOADTEST {
+
+
+Requester::Requester() {
+	// TODO Auto-generated constructor stub
+	id = 0;
+
+}
+
+Requester::~Requester() {
+	// TODO Auto-generated destructor stub
+}
+
+void Requester::monitor_queue(){
+	ProgressBar waitbar;
+	size_t total = URLS_QUEUE.getQueueSize();
+	while(1)
+	{
+		size_t remaining = URLS_QUEUE.getQueueSize();
+
+		if(remaining !=0){
+			this->timeArrayLock.lock();
+			vector<time_t>::iterator iter_time = this->time_to_respond.begin();
+			int i = 0;
+			double avg = 0;
+			while(iter_time!=this->time_to_respond.end()){
+				avg+= (*iter_time);
+				cout << "time:"  << *iter_time << endl;
+				iter_time++;
+				i++;
+			}
+			this->timeArrayLock.unlock();
+			printf("avg time: %f, ", avg/i);
+
+			waitbar.setProgress( (total - remaining )*100 /(float)total );
+			waitbar.print();
+
+		} else {
+			printf("Done!!");
+		}
+
+		sleep(10);
+	}
+}
+
+void Requester::run()
+{
+
+	cout << "starting.. thread.." << endl;
+	id++;
+	if (id == 1){
+		monitor_queue();
+	}
+
+	int requester = 0;
+	bool start = true;
+	while(1){
+		if (start){
+			requester = id;
+			start = false;
+		}
+
+		HTTPRequest *req = new HTTPRequest();
+		req->bDebugMode = false;
+		string url;
+
+		URLS_QUEUE.Pop(url);
+
+		if (!url.empty()){
+			cout << url << endl;
+			time_t time_start = time(NULL);
+			bool status = req->get(url, 120);
+			if (status){
+				string response;
+				req->getBody(response);
+				printf("%s", response.c_str());
+				fflush(stdout);
+				sleep(15);
+			} else {
+				cout << "request failed, timeout" << endl;
+			}
+			time_t time_d = (time(NULL) - time_start ) ;
+			this->timeArrayLock.lock();
+			this->time_to_respond.push_back(time_d);
+			this->timeArrayLock.unlock();
+		} else {
+			cout << "waiting for message in queue.." << endl;
+			sleep(10);
+		}
+
+
+		delete req;
+	}
+}
+} /* namespace LOADTEST */

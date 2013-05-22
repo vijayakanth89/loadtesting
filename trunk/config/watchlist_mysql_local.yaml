@@ -1,0 +1,5 @@
+thread_pool: 5
+period: 2
+get_timeout: 10
+total_requests: 50000
+host: http://localhost:10000/watchlist

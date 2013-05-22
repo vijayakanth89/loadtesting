@@ -1,0 +1,7 @@
+url: http://poolws2-us-beta.marketsimplified.com/raw/4 
+thread_pool: 3
+period: 5
+get_timeout: 120
+total_requests: 100
+fields:
+  mobile_request: 556%20<GOOG>%23%23ROUTER%3DOPX%2CTIMEOUT%3D60%2COPTION_TYPE=MINI%2CSESSION%3DF03223C1459A4A09A8D702AD1E50B4DB%23%23

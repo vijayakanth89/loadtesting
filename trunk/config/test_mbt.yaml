@@ -1,0 +1,7 @@
+url: http://poolws2.marketsimplified.com/raw/4 
+thread_pool: 3
+period: 10
+get_timeout: 120
+total_requests: 100
+fields:
+  mobile_request: 434%2520%3CMARKETSIM2%7C83bed603b488f87caeb7f20bc93e7d84973310c75ea7ab963fc5876b490efdbb%3E%23%23ROUTER%3DMBTRADING%23%23
